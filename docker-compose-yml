@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  image-push:
+    build: .
+    image: image-push:latest
+    container_name: image-push
+    # 交互模式运行（用于调试）
+    # stdin_open: true
+    # tty: true
+    # 使用示例 - 单次执行后退出
+    entrypoint: ["./image-push"]
+    # 挂载本地镜像tar包目录
+    volumes:
+      - ./images:/images:ro
+    environment:
+      - REGISTRY_ADDRESS=${REGISTRY_ADDRESS:-http://localhost:5000}
+      - REGISTRY_USERNAME=${REGISTRY_USERNAME:-admin}
+      - REGISTRY_PASSWORD=${REGISTRY_PASSWORD:-Harbor12345}
+      - REGISTRY_PROJECT=${REGISTRY_PROJECT:-library}
+      - SKIP_TLS=${SKIP_TLS:-true}
+      - CHUNK_SIZE=${CHUNK_SIZE:-10485760}
+    command: >
+      --address ${REGISTRY_ADDRESS}
+      --username ${REGISTRY_USERNAME}
+      --password ${REGISTRY_PASSWORD}
+      --project ${REGISTRY_PROJECT}
+      --file /images/your-image.tar
+      --skipTls ${SKIP_TLS}
+      --chunkSize ${CHUNK_SIZE}
+    restart: "no"
+    networks:
+      - image-push-net
+        
+networks:
+  image-push-net:
+    driver: bridge
